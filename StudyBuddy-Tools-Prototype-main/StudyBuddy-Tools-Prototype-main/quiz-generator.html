@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Quiz Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25), 
+                        0 0 0 1px rgba(255, 255, 255, 0.3);
+            max-width: 850px;
+            width: 100%;
+            padding: 50px;
+            animation: slideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-40px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        h1 {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 40px;
+            font-size: 3em;
+            font-weight: 800;
+            font-family: 'Space Grotesk', sans-serif;
+            letter-spacing: -1px;
+            animation: titleBounce 1s ease-out;
+            position: relative;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #667eea, transparent);
+            border-radius: 2px;
+            animation: lineGrow 1s ease-out 0.3s both;
+        }
+
+        @keyframes titleBounce {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes lineGrow {
+            from { width: 0; }
+            to { width: 100px; }
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 18px 25px;
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            font-size: 17px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        input[type="text"]:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1), 
+                        0 8px 16px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+            background: white;
+        }
+
+        button {
+            padding: 18px 35px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 17px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        button:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        button:disabled {
+            background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.6;
+        }
+
+        button:disabled:hover {
+            transform: none;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: #667eea;
+            font-size: 19px;
+            font-weight: 600;
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .spinner {
+            border: 5px solid rgba(102, 126, 234, 0.1);
+            border-top: 5px solid #667eea;
+            border-right: 5px solid #764ba2;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 0.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            margin: 0 auto 20px;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+            padding: 20px 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            display: none;
+            border-left: 5px solid #dc2626;
+            font-weight: 500;
+            animation: shake 0.5s ease-out, fadeIn 0.5s ease-out;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.2);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .apology-message {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+            padding: 25px 30px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            display: none;
+            border-left: 5px solid #f59e0b;
+            line-height: 1.8;
+            font-weight: 500;
+            animation: fadeIn 0.5s ease-out;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
+        }
+
+        .apology-message h3 {
+            color: #92400e;
+            margin-bottom: 15px;
+            font-weight: 700;
+            font-size: 1.2em;
+        }
+
+        .info-message {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+            padding: 20px 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            display: none;
+            border-left: 5px solid #3b82f6;
+            font-weight: 500;
+            animation: slideDown 0.5s ease-out;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .quiz-container {
+            display: none;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .quiz-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .quiz-header h2 {
+            margin-bottom: 15px;
+            font-weight: 700;
+            font-size: 1.8em;
+            position: relative;
+            z-index: 1;
+        }
+
+        .quiz-progress {
+            background: rgba(255, 255, 255, 0.2);
+            height: 10px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 15px;
+            position: relative;
+            z-index: 1;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #ffffff 0%, #f0f0f0 100%);
+            height: 100%;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0%;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .question-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            padding: 35px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            border-left: 6px solid #667eea;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            animation: cardAppear 0.5s ease-out;
+            transition: all 0.3s ease;
+        }
+
+        .question-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.15);
+        }
+
+        @keyframes cardAppear {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .question-number {
+            color: #667eea;
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .question-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option {
+            padding: 18px 25px;
+            background: white;
+            border: 3px solid #e5e7eb;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .option:hover::before {
+            left: 100%;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8edff 100%);
+            transform: translateX(10px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .option.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .option.correct {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            animation: correctPulse 0.5s ease-out;
+        }
+
+        .option.incorrect {
+            border-color: #ef4444;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            animation: incorrectShake 0.5s ease-out;
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .quiz-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #5a6268 0%, #343a40 100%);
+        }
+
+        .results-container {
+            display: none;
+            text-align: center;
+            animation: fadeInScale 0.8s ease-out;
+        }
+
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .score-circle {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 40px auto;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+            animation: scoreAppear 1s ease-out, scorePulse 2s ease-in-out infinite 1s;
+            position: relative;
+        }
+
+        .score-circle::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            opacity: 0.3;
+            animation: ripple 2s ease-out infinite;
+        }
+
+        @keyframes scoreAppear {
+            from { transform: scale(0) rotate(0deg); }
+            to { transform: scale(1) rotate(360deg); }
+        }
+
+        @keyframes scorePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes ripple {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .score-circle .score {
+            font-size: 56px;
+            font-weight: 800;
+            font-family: 'Space Grotesk', sans-serif;
+            position: relative;
+            z-index: 1;
+        }
+
+        .score-circle .total {
+            font-size: 20px;
+            opacity: 0.95;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        .results-details {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            padding: 30px;
+            border-radius: 20px;
+            margin: 30px 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            animation: slideUp 0.6s ease-out 0.3s both;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 2px solid #e5e7eb;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #6b7280;
+            font-size: 17px;
+        }
+
+        .result-value {
+            font-weight: 700;
+            color: #1f2937;
+            font-size: 18px;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .feedback-note {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 35px;
+            border-radius: 20px;
+            margin: 30px 0;
+            text-align: left;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+            line-height: 1.9;
+            animation: slideUp 0.8s ease-out 0.5s both;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feedback-note::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        .feedback-note h3 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feedback-note p {
+            margin-bottom: 15px;
+            font-size: 17px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feedback-note strong {
+            font-weight: 700;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 30px 25px;
+                border-radius: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+                margin-bottom: 30px;
+            }
+
+            h1::after {
+                width: 80px;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+                padding: 16px 25px;
+            }
+
+            .quiz-header {
+                padding: 20px;
+            }
+
+            .quiz-header h2 {
+                font-size: 1.4em;
+            }
+
+            .question-card {
+                padding: 25px;
+            }
+
+            .question-text {
+                font-size: 18px;
+            }
+
+            .option {
+                padding: 15px 20px;
+                font-size: 15px;
+            }
+
+            .score-circle {
+                width: 180px;
+                height: 180px;
+            }
+
+            .score-circle .score {
+                font-size: 48px;
+            }
+
+            .score-circle .total {
+                font-size: 18px;
+            }
+
+            .results-details {
+                padding: 20px;
+            }
+
+            .feedback-note {
+                padding: 25px;
+            }
+
+            .feedback-note h3 {
+                font-size: 20px;
+            }
+
+            .quiz-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .quiz-controls button {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .container {
+                padding: 25px 20px;
+            }
+
+            .score-circle {
+                width: 160px;
+                height: 160px;
+            }
+
+            .score-circle .score {
+                font-size: 42px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 AI Quiz Generator</h1>
+        
+        <div class="input-section" id="inputSection">
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="topicInput" 
+                    placeholder="Write the topic name (e.g., Science, History, Technology)"
+                    autocomplete="off"
+                >
+                <button id="generateBtn" onclick="generateQuiz()">Generate Quiz</button>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>Generating your quiz... Please wait</div>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="apology-message" id="apologyMessage"></div>
+        <div class="info-message" id="infoMessage"></div>
+
+        <div class="quiz-container" id="quizContainer">
+            <div class="quiz-header">
+                <h2 id="quizTopic">Quiz Topic</h2>
+                <div>Question <span id="currentQuestion">1</span> of <span id="totalQuestions">30</span></div>
+                <div class="quiz-progress">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+
+            <div id="questionContainer"></div>
+
+            <div class="quiz-controls">
+                <button class="btn-secondary" onclick="previousQuestion()" id="prevBtn">← Previous</button>
+                <button onclick="nextQuestion()" id="nextBtn">Next →</button>
+            </div>
+        </div>
+
+        <div class="results-container" id="resultsContainer">
+            <h2>🎉 Quiz Complete!</h2>
+            <div class="score-circle">
+                <div class="score" id="finalScore">0</div>
+                <div class="total">out of 30</div>
+            </div>
+            <div class="results-details">
+                <div class="result-row">
+                    <span class="result-label">Correct Answers:</span>
+                    <span class="result-value" style="color: #28a745;" id="correctCount">0</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Incorrect Answers:</span>
+                    <span class="result-value" style="color: #dc3545;" id="incorrectCount">0</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Percentage:</span>
+                    <span class="result-value" style="color: #667eea;" id="percentage">0%</span>
+                </div>
+            </div>
+            <div class="feedback-note" id="feedbackNote">
+                <!-- Personalized feedback will be inserted here -->
+            </div>
+            <button onclick="startNewQuiz()">Generate New Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = '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';
+        const API_URL = 'https://api.openai.com/v1/chat/completions';
+
+        let quizData = null;
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let score = 0;
+
+        // Listen for Enter key
+        document.getElementById('topicInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateQuiz();
+            }
+        });
+
+        async function generateQuiz() {
+            const topic = document.getElementById('topicInput').value.trim();
+            
+            if (!topic) {
+                showError('Please enter a topic name');
+                return;
+            }
+
+            // Check if input is gibberish or irrelevant
+            if (isGibberish(topic)) {
+                showError('Please enter a valid and meaningful topic name. Gibberish or irrelevant text is not allowed.');
+                return;
+            }
+
+            // Check if topic is educational/study-related
+            if (!isEducationalTopic(topic)) {
+                showError('Please enter an educational or study-related topic. Random object names like "dog", "cat", "table", "chair", etc. are not allowed. Enter topics like Science, History, Mathematics, Physics, etc.');
+                return;
+            }
+
+            hideAll();
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('generateBtn').disabled = true;
+
+            try {
+                // Check if request is for quiz generation
+                if (!isQuizRequest(topic)) {
+                    showApology();
+                    return;
+                }
+
+                // Auto-correct spelling
+                const correctedTopic = await correctSpelling(topic);
+                if (correctedTopic !== topic) {
+                    document.getElementById('topicInput').value = correctedTopic;
+                    showInfo(`Corrected spelling: "${topic}" → "${correctedTopic}"`);
+                }
+
+                const prompt = `Generate a quiz with exactly 30 multiple choice questions about "${correctedTopic}". 
+
+CRITICAL SYLLABUS REQUIREMENTS:
+- ALL questions MUST be strictly aligned with CBSE, ICSE, or NTA curriculum standards
+- Questions should cover content that is part of standard Indian educational boards (CBSE/ICSE/NTA)
+- NO questions should be out of context or beyond the scope of these syllabi
+- Questions should be appropriate for the educational level of the topic
+- Ensure factual accuracy and relevance to Indian educational standards
+- For academic subjects: Stick to standard textbook concepts and theories
+- For competitive exams (NTA): Follow JEE/NEET/CUET level standards where applicable
+
+DIFFICULTY DISTRIBUTION (MUST FOLLOW):
+- 12 questions EASY (40%) - Basic concepts, definitions, simple recall
+- 12 questions MEDIUM (40%) - Application of concepts, moderate thinking
+- 6 questions HARD (20%) - Complex analysis, deep understanding, problem-solving
+
+This distribution ensures comprehensive theory coverage from fundamentals to advanced concepts.
+                
+IMPORTANT: Respond ONLY with a valid JSON object, no additional text or markdown formatting.
+
+The JSON must follow this exact structure:
+{
+  "topic": "${topic}",
+  "questions": [
+    {
+      "question": "Question text here?",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correctAnswer": 0,
+      "difficulty": "easy"
+    }
+  ]
+}
+
+Rules:
+- Include exactly 30 questions (12 easy + 12 medium + 6 hard)
+- Each question MUST include a "difficulty" field with value: "easy", "medium", or "hard"
+- Each question must have exactly 4 options
+- correctAnswer must be the index (0-3) of the correct option
+- Questions should be diverse and cover different aspects of the topic within syllabus boundaries
+- Easy questions test basic understanding, medium questions test application, hard questions test mastery
+- Avoid obscure, outdated, or non-standard content
+- Return ONLY the JSON object, nothing else`;
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-3.5-turbo",
+                        messages: [{
+                            role: "user",
+                            content: prompt
+                        }],
+                        temperature: 0.7,
+                        max_tokens: 4000
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const generatedText = data.choices[0].message.content;
+                
+                // Clean the response to extract JSON
+                let jsonText = generatedText.trim();
+                // Remove markdown code blocks if present
+                jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+                // Remove any leading/trailing whitespace
+                jsonText = jsonText.trim();
+                
+                quizData = JSON.parse(jsonText);
+                // Update topic with corrected version
+                quizData.topic = correctedTopic;
+
+                if (!quizData.questions || quizData.questions.length !== 30) {
+                    throw new Error('Invalid quiz format: must contain exactly 30 questions');
+                }
+
+                // Validate quiz structure
+                for (let q of quizData.questions) {
+                    if (!q.question || !q.options || q.options.length !== 4 || typeof q.correctAnswer !== 'number' || !q.difficulty) {
+                        throw new Error('Invalid question format');
+                    }
+                }
+
+                startQuiz();
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Failed to generate quiz. Please try again. Error: ' + error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('generateBtn').disabled = false;
+            }
+        }
+
+        async function correctSpelling(topic) {
+            try {
+                const spellCheckPrompt = `You are a spell checker. The user entered: "${topic}"
+                
+If there are any spelling mistakes, return ONLY the corrected version.
+If the spelling is already correct, return ONLY the original text.
+Do not add any explanation, quotes, or extra text. Just return the corrected topic name.
+                
+Examples:
+- Input: "Scince" → Output: Science
+- Input: "Mathemetics" → Output: Mathematics
+- Input: "Wrld War 2" → Output: World War 2
+- Input: "History" → Output: History`;
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-3.5-turbo",
+                        messages: [{
+                            role: "user",
+                            content: spellCheckPrompt
+                        }],
+                        temperature: 0.1,
+                        max_tokens: 100
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    let corrected = data.choices[0].message.content.trim();
+                    // Remove any quotes that might be added
+                    corrected = corrected.replace(/^"|"$/g, '').replace(/^'|'$/g, '');
+                    return corrected;
+                }
+            } catch (error) {
+                console.log('Spell check failed, using original:', error);
+            }
+            return topic;
+        }
+
+        function isGibberish(text) {
+            // Remove spaces and convert to lowercase
+            const cleanText = text.toLowerCase().replace(/\s+/g, '');
+            
+            // Check if text is too short (less than 2 characters)
+            if (cleanText.length < 2) {
+                return true;
+            }
+
+            // Check for excessive consonants in a row (more than 5)
+            const consonantPattern = /[bcdfghjklmnpqrstvwxyz]{6,}/i;
+            if (consonantPattern.test(cleanText)) {
+                return true;
+            }
+
+            // Count vowels in the text
+            const vowelCount = (cleanText.match(/[aeiou]/gi) || []).length;
+            const vowelRatio = vowelCount / cleanText.length;
+            
+            // If less than 15% vowels, likely gibberish (normal English is ~40%)
+            if (vowelRatio < 0.15 && cleanText.length > 3) {
+                return true;
+            }
+
+            // Check for repetitive characters (e.g., "aaaaaaa")
+            const repetitivePattern = /(.)\1{4,}/;
+            if (repetitivePattern.test(cleanText)) {
+                return true;
+            }
+
+            // Check if it's mostly numbers or special characters
+            const alphaCount = (cleanText.match(/[a-z]/gi) || []).length;
+            const alphaRatio = alphaCount / cleanText.length;
+            if (alphaRatio < 0.5) {
+                return true;
+            }
+
+            return false;
+        }
+
+        function isEducationalTopic(topic) {
+            const lowerTopic = topic.toLowerCase().trim();
+            
+            // List of random objects and irrelevant words that should be rejected
+            const nonEducationalWords = [
+                'dog', 'cat', 'rat', 'mouse', 'bird', 'fish', 'cow', 'horse', 'pig', 'chicken',
+                'table', 'chair', 'desk', 'bed', 'sofa', 'couch', 'lamp', 'door', 'window',
+                'car', 'bike', 'bus', 'train', 'plane', 'boat', 'ship', 'truck',
+                'pen', 'pencil', 'eraser', 'ruler', 'notebook', 'bag', 'shoe', 'shirt',
+                'apple', 'banana', 'orange', 'mango', 'grape', 'pizza', 'burger', 'cake',
+                'phone', 'laptop', 'keyboard', 'mouse', 'monitor', 'speaker',
+                'house', 'building', 'road', 'street', 'park', 'garden',
+                'red', 'blue', 'green', 'yellow', 'black', 'white', 'color',
+                'one', 'two', 'three', 'four', 'five', 'number'
+            ];
+
+            // Check if topic is exactly a non-educational word
+            if (nonEducationalWords.includes(lowerTopic)) {
+                return false;
+            }
+
+            // Check if topic is only one short common word (likely an object)
+            const words = lowerTopic.split(/\s+/);
+            if (words.length === 1 && words[0].length <= 6) {
+                // Check if it looks like a random object name
+                const commonObjects = /^(dog|cat|rat|pen|car|bus|bed|cup|hat|bag|box|key|map|toy|fan|pot|pan)s?$/i;
+                if (commonObjects.test(lowerTopic)) {
+                    return false;
+                }
+            }
+
+            // List of educational keywords that indicate a valid topic
+            const educationalKeywords = [
+                'science', 'physics', 'chemistry', 'biology', 'mathematics', 'math', 'maths',
+                'history', 'geography', 'economics', 'commerce', 'accountancy', 'business',
+                'english', 'literature', 'grammar', 'language', 'hindi', 'sanskrit',
+                'computer', 'programming', 'coding', 'technology', 'engineering',
+                'psychology', 'sociology', 'philosophy', 'political', 'civics',
+                'environment', 'ecology', 'botany', 'zoology', 'genetics',
+                'algebra', 'geometry', 'calculus', 'trigonometry', 'statistics',
+                'organic', 'inorganic', 'physical chemistry', 'mechanics', 'thermodynamics',
+                'electricity', 'magnetism', 'optics', 'quantum', 'relativity',
+                'world war', 'ancient', 'medieval', 'modern', 'indian history',
+                'constitution', 'democracy', 'government', 'law', 'rights',
+                'theory', 'concept', 'principle', 'theorem', 'formula', 'equation',
+                'study', 'course', 'subject', 'topic', 'chapter', 'lesson',
+                'exam', 'test', 'jee', 'neet', 'cuet', 'board', 'cbse', 'icse',
+                'class', 'standard', 'grade', 'level', 'competitive'
+            ];
+
+            // If topic contains any educational keyword, it's valid
+            for (let keyword of educationalKeywords) {
+                if (lowerTopic.includes(keyword)) {
+                    return true;
+                }
+            }
+
+            // If topic is longer than 2 words and doesn't match common objects, likely educational
+            if (words.length >= 2 && !nonEducationalWords.some(word => lowerTopic === word)) {
+                return true;
+            }
+
+            // Default: reject if not clearly educational
+            return false;
+        }
+
+        function isQuizRequest(topic) {
+            const lowerTopic = topic.toLowerCase();
+            const nonQuizKeywords = [
+                'write', 'create', 'generate a story', 'generate an essay', 
+                'generate a poem', 'generate code', 'make a', 'build a',
+                'essay', 'story', 'poem', 'article', 'blog', 'letter',
+                'email', 'script', 'program', 'app', 'website'
+            ];
+
+            // Check if the request contains non-quiz keywords
+            for (let keyword of nonQuizKeywords) {
+                if (lowerTopic.includes(keyword) && !lowerTopic.includes('quiz')) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        function showApology() {
+            hideAll();
+            const apologyDiv = document.getElementById('apologyMessage');
+            apologyDiv.innerHTML = `
+                <h3>⚠️ Out of Scope Request</h3>
+                <p>We sincerely apologize, but this application is specifically designed to generate quiz questions only.</p>
+                <p>We understand this may not meet your current needs, and we regret any inconvenience this may cause.</p>
+                <p>Please provide a topic name for quiz generation, and we'll be happy to create an engaging 30-question quiz for you.</p>
+            `;
+            apologyDiv.style.display = 'block';
+            document.getElementById('inputSection').style.display = 'block';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('inputSection').style.display = 'block';
+        }
+
+        function showInfo(message) {
+            const infoDiv = document.getElementById('infoMessage');
+            infoDiv.textContent = message;
+            infoDiv.style.display = 'block';
+            setTimeout(() => {
+                infoDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function hideAll() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('apologyMessage').style.display = 'none';
+            document.getElementById('infoMessage').style.display = 'none';
+            document.getElementById('quizContainer').style.display = 'none';
+            document.getElementById('resultsContainer').style.display = 'none';
+            document.getElementById('inputSection').style.display = 'none';
+        }
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            userAnswers = new Array(30).fill(null);
+            score = 0;
+
+            document.getElementById('quizTopic').textContent = quizData.topic;
+            document.getElementById('totalQuestions').textContent = '30';
+            document.getElementById('quizContainer').style.display = 'block';
+            
+            displayQuestion();
+        }
+
+        function displayQuestion() {
+            const question = quizData.questions[currentQuestionIndex];
+            const questionContainer = document.getElementById('questionContainer');
+            
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            
+            // Update progress bar
+            const progress = ((currentQuestionIndex + 1) / 30) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            let optionsHTML = '';
+            question.options.forEach((option, index) => {
+                const isSelected = userAnswers[currentQuestionIndex] === index;
+                optionsHTML += `
+                    <div class="option ${isSelected ? 'selected' : ''}" onclick="selectOption(${index})">
+                        <span style="font-weight: bold;">${String.fromCharCode(65 + index)}.</span>
+                        <span>${option}</span>
+                    </div>
+                `;
+            });
+
+            questionContainer.innerHTML = `
+                <div class="question-card">
+                    <div class="question-number">Question ${currentQuestionIndex + 1} of 30</div>
+                    <div class="question-text">${question.question}</div>
+                    <div class="options">${optionsHTML}</div>
+                </div>
+            `;
+
+            // Update button states
+            document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
+            document.getElementById('nextBtn').textContent = currentQuestionIndex === 29 ? 'Submit Quiz' : 'Next →';
+        }
+
+        function selectOption(optionIndex) {
+            userAnswers[currentQuestionIndex] = optionIndex;
+            displayQuestion();
+        }
+
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                displayQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < 29) {
+                currentQuestionIndex++;
+                displayQuestion();
+            } else {
+                submitQuiz();
+            }
+        }
+
+        function submitQuiz() {
+            // Calculate score
+            score = 0;
+            for (let i = 0; i < 30; i++) {
+                if (userAnswers[i] === quizData.questions[i].correctAnswer) {
+                    score++;
+                }
+            }
+
+            const incorrect = 30 - score;
+            const percentage = ((score / 30) * 100).toFixed(1);
+
+            hideAll();
+            document.getElementById('resultsContainer').style.display = 'block';
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('correctCount').textContent = score;
+            document.getElementById('incorrectCount').textContent = incorrect;
+            document.getElementById('percentage').textContent = percentage + '%';
+
+            // Generate personalized feedback
+            generateFeedback(score, percentage);
+        }
+
+        function generateFeedback(score, percentage) {
+            const feedbackDiv = document.getElementById('feedbackNote');
+            let emoji, title, message, recommendation;
+
+            if (percentage >= 90) {
+                emoji = '🌟';
+                title = 'Outstanding Performance!';
+                message = `Excellent work! You scored ${score}/30 (${percentage}%). You have mastered this topic and demonstrated exceptional understanding.`;
+                recommendation = '<strong>Recommendation:</strong> You have excellent command over this topic. You can move forward to advanced topics or help others learn!';
+            } else if (percentage >= 75) {
+                emoji = '✅';
+                title = 'Great Job!';
+                message = `Well done! You scored ${score}/30 (${percentage}%). You have a strong grasp of this topic.`;
+                recommendation = '<strong>Recommendation:</strong> You are doing great! Review the questions you missed to achieve perfection. A quick revision will make you topic-ready.';
+            } else if (percentage >= 60) {
+                emoji = '👍';
+                title = 'Good Effort!';
+                message = `Good work! You scored ${score}/30 (${percentage}%). You have a decent understanding of the topic.`;
+                recommendation = '<strong>Recommendation:</strong> You are on the right track! Focus on the concepts you found challenging. Spend more time practicing medium and hard questions.';
+            } else if (percentage >= 40) {
+                emoji = '📚';
+                title = 'Needs Improvement';
+                message = `You scored ${score}/30 (${percentage}%). Your foundation needs strengthening.`;
+                recommendation = '<strong>Recommendation:</strong> You should study this topic again thoroughly. Focus on understanding basic concepts first, then move to application-based questions. Practice regularly and take the quiz again.';
+            } else {
+                emoji = '📖';
+                title = 'Keep Learning!';
+                message = `You scored ${score}/30 (${percentage}%). Don\\'t worry, everyone starts somewhere!`;
+                recommendation = '<strong>Recommendation:</strong> You need to study this topic from the beginning. Take your time to understand each concept carefully. Read textbooks, watch educational videos, and practice basic questions first. Stay motivated and keep learning!';
+            }
+
+            feedbackDiv.innerHTML = `
+                <h3>${emoji} ${title}</h3>
+                <p>${message}</p>
+                <p>${recommendation}</p>
+            `;
+        }
+
+        function startNewQuiz() {
+            hideAll();
+            document.getElementById('inputSection').style.display = 'block';
+            document.getElementById('topicInput').value = '';
+            document.getElementById('topicInput').focus();
+        }
+
+        // Focus on input on load
+        window.onload = function() {
+            document.getElementById('topicInput').focus();
+        };
+    </script>
+</body>
+</html>
